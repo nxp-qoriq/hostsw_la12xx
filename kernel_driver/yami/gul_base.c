@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0)
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 
 #include <linux/kernel.h>
@@ -820,12 +820,14 @@ int init_tti_dev(void)
 
 	brd_ver = gul_get_host_board_rev();
 	/* Updating default value of tti_per_dev = 3 for LA1224 Rev C */
-	if (brd_ver == 'C') {
 		if (!disable_sideband)
+		{
+			if (brd_ver == 'C')
 			tti_per_dev = 3;
-		else
+		}
+		else{
 			tti_per_dev = 1;
-	}
+		}
 #endif
 	/*Allocating chardev region and assigning Major number*/
 	err = alloc_chrdev_region(&tti_dev_number, 0,
@@ -912,7 +914,6 @@ int tti_dev_start(struct gul_dev *dev)
 			return -ENODEV;
 		}
 	}
-
 	for (i = 0; i < tti_per_dev; i++) {
 		tti_dev = kmalloc(sizeof(struct tti_dev), GFP_KERNEL);
 		if (tti_dev == NULL)
@@ -1499,8 +1500,11 @@ int gul_base_remove(struct gul_dev *gul_dev)
 
 	gul_subdrv_remove(gul_dev);
 
+	if (disable_sideband)
+	gul_dev_put_msi(gul_dev,gul_dev->hif->msi_tti);
+
 	for (; count < GUL_MSI_MAX_CNT; count++) {
-		if (gul_dev->irq[count].free == GUL_MSI_IRQ_BUSY) {
+		if (gul_dev->irq[count].free == GUL_MSI_IRQ_BUSY && count != gul_dev->hif->msi_tti) {
 			free_irq(gul_dev->irq[count].irq_val, gul_dev);
 			gul_dev->irq[count].free = GUL_MSI_IRQ_FREE;
 		}
