@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 
 #include <linux/kernel.h>
@@ -451,8 +451,13 @@ ssize_t gul_show_global_status(char *buf)
 
 	sprintf(buf, "*%s\n", VERSION);
 #ifdef LA1224
-	sprintf(&buf[strlen(buf)], " NXP LA1224-RDB Rev-%c\n",
-		gul_get_host_board_rev());
+	if (disable_sideband)
+		sprintf(&buf[strlen(buf)], " DAF ? -%c\n",
+			gul_get_host_board_rev());
+	else
+		sprintf(&buf[strlen(buf)], " NXP LA1224-RDB Rev-%c\n",
+			gul_get_host_board_rev());
+
 #endif
 
 	sprintf(&buf[strlen(buf)], " No. of LA12xx Devices Detected = %d\n",

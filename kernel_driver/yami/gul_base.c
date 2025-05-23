@@ -1099,6 +1099,9 @@ char gul_get_host_board_rev(void)
 {
 	struct device_node *node;
 
+	if (disable_sideband)
+		return 'F';
+
 	if (host_board_version_str)
 		return host_board_version_str[strlen(host_board_version_str) - 1];
 
@@ -1289,23 +1292,28 @@ int gul_base_probe(struct gul_dev *gul_dev)
 
 	switch (board_ver) {
 	case 'A':
-		dev_dbg(gul_dev->dev, "%s: GEUL_HOST_REVA_VAL\n",
+		dev_info(gul_dev->dev, "%s: GEUL_HOST_REVA_VAL\n",
 					gul_dev->name);
 		writel(GEUL_HOST_REVA_VAL, &gul_dev->hif->host_board_rev);
 		break;
 	case 'B':
-		dev_dbg(gul_dev->dev, "%s: GEUL_HOST_REVB_VAL\n",
+		dev_info(gul_dev->dev, "%s: GEUL_HOST_REVB_VAL\n",
 					gul_dev->name);
 		writel(GEUL_HOST_REVB_VAL, &gul_dev->hif->host_board_rev);
 		break;
 	case 'C':
-		dev_dbg(gul_dev->dev, "%s: GEUL_HOST_REVC_VAL\n",
+		dev_info(gul_dev->dev, "%s: GEUL_HOST_REVC_VAL\n",
 					gul_dev->name);
 		writel(GEUL_HOST_REVC_VAL, &gul_dev->hif->host_board_rev);
 		break;
-	default:
-		dev_dbg(gul_dev->dev, "%s: GEUL_HOST_UNKNOWN_VAL\n",
+	case 'F':
+		dev_info(gul_dev->dev, "%s: GEUL_HOST_UNKNOWN_VAL-DAF board?\n",
 					gul_dev->name);
+		writel(GEUL_HOST_UNKNOWN_VAL, &gul_dev->hif->host_board_rev);
+		break;
+	default:
+		dev_info(gul_dev->dev, "%s: GEUL_HOST_UNKNOWN_VALi %c\n",
+					gul_dev->name, board_ver);
 		writel(GEUL_HOST_UNKNOWN_VAL, &gul_dev->hif->host_board_rev);
 		break;
 	}

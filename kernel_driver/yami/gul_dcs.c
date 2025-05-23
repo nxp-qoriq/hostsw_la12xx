@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 
 #include <linux/delay.h>
@@ -2081,7 +2081,7 @@ int dcs_probe(struct gul_dev *gul_dev, int vspa_irq_count,
 
 #if BNRG_DCS
 	if ((!hsdcs_enable) || (gul_ep_get_soc_rev() == GEUL_SVR_REVA_VAL)
-		|| (gul_get_host_board_rev() == 'C'))
+		|| (gul_get_host_board_rev() == 'C') || (gul_get_host_board_rev() == 'F'))
 #endif
 	{
 #if DCS_LS_EN
