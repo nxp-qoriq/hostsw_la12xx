@@ -1,0 +1,33 @@
+
+A USIM (Universal Subscriber Identity Module) is the functional equivalent of
+the SIM in a GSM device. It is the entity that stores subscriber-related
+information and implements the security functions pertaining to authentication
+and ciphering on the user side. A 5G SIM is a tamper-proof secure element,
+which is the only solution to secure 5G network access. It has been specified
+by the 5G standardization body ETSI-3GPP in Releases 15 & 16 UICC specifications
+(UICC: Universal Integrated Circuit Card, better known as a SIM). It aims at
+directly addressing the key 5G attributes: enhanced mobile broadband, massive
+IoT, critical communications.
+
+A USIM is a mini computer which is able to handle several mini applications,
+for instance a contactless epurse for the subway/underground trains, a local
+service portal giving you access to your phone bill, etc. With regards to
+security, a new algorithm is integrated (derived from research in cryptology).
+It protects you from unauthorized access to your phone line, and therefore to
+be charged with fraudulent calls on your bill, your calls and data exchanges
+are encrypted using keys computed by the USIM, and these keys are stronger
+than those provided by SIMs.
+
+The USIM also consists of a file system, which is like the SIM with a different
+structure (file’s hierarchy positions). In addition, the USIM file system
+introduced the ADF (Application Dedicated File), which is like a simple DF but
+related to an application (usually SIM or USIM). In addition, the USIM also
+introduced the TLV (Tag Length Value) responses and structure. The TLV is
+(as the name applies) consists the tag, the length and the value of the
+information element needed to be passed as a response or saved as data.
+
+
+This usim library provides interface between any user application and usim
+driver which runs in linux kernel. This library is provided with sample APIs
+which can be used to read, write or modify any files present under USIM file
+system on SIM card for both 4G and 5G applications.

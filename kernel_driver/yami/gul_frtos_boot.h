@@ -1,0 +1,24 @@
+/* SPDX-License-Identifier: GPL-2.0
+ * Copyright 2020-2022 NXP
+ */
+
+#ifndef _GUL_FRTOS_H
+#define _GUL_FRTOS_H
+
+#define GEUL_CORE0_ENTRY_POINT 0xe0200800
+#define GEUL_RSVD 0
+#define GEUL_MAX_SEG_ENTRIES 8
+#define GEUL_USE_QDMA 0
+#define GEUL_USE_MEMCOPY 1
+
+#define PEBM_CORE_TEXT_ADDR 0xe0200400
+#define DDR_TEXT_ADDR 0xe0200800
+
+#define PEBM_CORE0_DMEM_BASE_ADDR 0xe02d0000
+#define PEBM_TEXT_OFFSET (2 * 1024 * 1024) /* 2 MB */
+#define PEBM_DMEM_OFFSET (64 * 1024) /* 64 KB */
+
+#define DMEM_CORE0_ADDR 0xe0000000
+#define DMEM_OFFSET 0x0000
+
+#endif /* _GUL_FRTOS_H */

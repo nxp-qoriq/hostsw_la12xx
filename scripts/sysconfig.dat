@@ -1,0 +1,69 @@
+
+##  key-value pair:system configuration file   ##
+
+
+#################################################
+##         yami configuration                  ##
+#################################################
+
+## below are  yami.ko load time parameters
+
+
+scratch_buf_size=0x20000000
+scratch_buf_phys_addr=0x2360000000
+hsdcs_enable=1
+
+#pci_addr_array=0002:01:00.0,0001:01:00.0
+#hsdcs_sps=983
+#ls_dac_sps=245
+#ls_adc_sps=245
+
+##Temperature (in °C) at which yami will load actual rum-time FreeRTOS and VSPA images. 
+warmup_temp=0
+
+##Maximum time (in sec ) for which warm-up images will be running.
+##If the warmup_temp is not achieved in this time, 
+##forced reboot of LA12xx will happen with actual run-time FreeRTOS and VSPA images.
+##If this parameter is set to 0, warmup feature will be disabled.
+warmup_timeout=30
+
+#alt_firmware_name=geul_e200_cus.elf
+
+
+#This is a delimiter to parse all the yami args
+yamidelimit=1
+## Default yami path will taken if not specified
+#yamipath=/lib/firmware/yami_cus.ko
+
+#################################################
+## HS DCS driver module-specific configuration ##
+#################################################
+#fr1_fr2_test_tool path
+fr1_fr2=/root/fr1_fr2_test_tool
+
+## comment below to disable the SINAD check
+check_sinad=1
+## comment below to disable the ANT0 SINAD check
+sinad_check_ant0=1
+## comment below to disable the ANT1 SINAD check
+sinad_check_ant1=1
+## single tone freq in MHz(100,200,300,400,500,600,700)
+single_tone_freq=400
+## single tone freq Amplitude 100%
+single_tone_amp=85
+## in dB (Measured SINAD < Desired SINAD) => Perform Recalibration
+desired_SINAD=34
+## Maximum retry for recalibration
+max_recal_retry=5
+## enable the required re-calibration full (or) fast (or) both
+dofullcal=1
+#dofastcal=1
+
+
+
+#################################################
+##      RF fr2 specific configuration          ##
+#################################################
+
+
+

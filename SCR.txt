@@ -1,0 +1,78 @@
+NXP Software Content Register
+----------------------------------------------------------------------------------------------------------------------------
+HOSTSW_LA12XX repository contains all the host software components for
+supporting LA12xx PCIe card. It includes LA12xx PCIe kernel driver,
+user space libraries, user space applications, user space configuration
+files or scripts that are required, and any test IQ data that might be
+required for basic data path test.
+
+Release Name:		LA12XX_SDK
+Package:		hostsw_la12xx
+Release Location:	https://github.com/nxp-qoriq/hostsw_la12xx
+Origin: 		NXP (BSD-3-Clause OR GPL-2.0)
+
+
+Package - api
+-    Description: api (files here are shared between user and kernel spaces)
+-    Author: NXP
+-    License: BSD-3-Clause OR GPL-2.0
+-    Format: source code
+-    Location: api
+
+Package - uapi
+-    Description: uapi (files here are shared between user and kernel spaces)
+-    Author: NXP
+-    License: BSD-3-Clause OR GPL-2.0
+-    Format: source code
+-    Location: uapi
+
+Package - app/devmem
+-    Description: devmem application
+-    License: GPL-2.0
+-    Format: source code
+-    Location: app
+-    Author: 	Jan-Derk Bakker (jdb@lartmaker.nl)
+		The Mobile MultiMedia Communications (http://www.mmc.tudelft.nl/)
+		Ubiquitous Communications (http://www.ubicom.tudelft.nl/)
+
+Package - app
+-    Description: application samples
+-    Author: NXP
+-    License: BSD-3-Clause
+-    Format: source code
+-    Location: app
+
+Package - lib
+-    Description: library for userspace application
+-    Author: NXP
+-    License: BSD-3-Clause
+-    Format: source code
+-    Location: lib
+
+Package - scripts
+-    Description: scripts for loading kernel module
+-    Author: NXP
+-    License: BSD-3-Clause
+-    Format: source code
+-    Location: scripts
+
+Package - kernel_drivers
+-    Description: PCI based Host Device Driver for LA931x SoC 
+-    Author: NXP
+-    License: BSD-3-Clause OR GPL-2.0
+-    Format: source code
+-    Location: kernel-drivers
+
+Package - HS_DCS firmware
+-    Description: Firmware for HS_DCS IP (adc_cal*.bin)
+-    Author: IQA
+-    License: LA_OPT_NXP_Software_License – Additional Distribution License granted, license in Section 2.3 applies
+-    Format: binary
+-    Location: firmware
+
+Package - firmware
+-    Description: Firmware for e200 and VSPA
+-    Author: NXP
+-    License: LA_OPT_NXP_Software_License – Additional Distribution License granted, license in Section 2.3 applies
+-    Format: binary
+-    Location: firmware

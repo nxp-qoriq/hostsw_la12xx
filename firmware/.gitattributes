@@ -1,0 +1,6 @@
+*.elf -diff
+*.itb -diff
+*.elf binary
+*.itb binary
+*.elf merge=ours
+*.itb merge=ours

@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: BSD-3-Clause
+#Copyright 2019 NXP
+
+CFLAGS  += -Wall -Werror
+LDFLAGS  += -L${LIB_INSTALL_DIR}
+
+INCLUDES += -I${API_DIR}
+
+SRCS_TEST := get_timestamp.c
+OBJS_TEST := $(SRCS_TEST:.c =.o)
+BIN_TEST := get_timestamp
+SO_FILE := mpic_gb_timestamp
+
+all: $(BIN_TEST)
+
+$(BIN_TEST): ${OBJS_TEST}
+	${CC} ${CFLAGS} ${LDFLAGS} -o $(BIN_TEST) ${OBJS_TEST} -l${SO_FILE} $(INCLUDES)
+
+%.o: %.c
+	${CC} -c ${CFLAGS} ${INCLUDES}  $< -o $@
+
+clean:
+	rm -rf *.o $(BIN_TEST)
+
+install:
+	install -D $(BIN_TEST) ${BIN_INSTALL_DIR}/$(BIN_TEST)
