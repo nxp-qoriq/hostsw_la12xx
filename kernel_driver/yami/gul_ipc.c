@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <linux/moduleparam.h>
 #include <linux/kernel.h>
@@ -165,8 +165,12 @@ static irqreturn_t ipc_irq_handler(int irq, void *data)
 
 	/* Send signal to IPC Channel Listner */
 	if (ipc_chan)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,19,0)
 		eventfd_signal(ipc_chan->evt_fd_ctxt,
 				SIGNAL_TO_CHANNEL_LISTENER);
+#else
+	eventfd_signal(ipc_chan->evt_fd_ctxt);
+#endif
 
 	return IRQ_HANDLED;
 }
@@ -209,7 +213,7 @@ static void gul_ipc_create_hugepage_outbound(struct gul_dev *gul_dev,
 
 }
 
-int register_ipc_channel_irq(struct gul_dev *gul_dev, int ipc_ch_num,
+static int register_ipc_channel_irq(struct gul_dev *gul_dev, int ipc_ch_num,
 				uint32_t fd)
 {
 	int ret = 0, irq_num = 0, index = 0;
@@ -258,7 +262,9 @@ int register_ipc_channel_irq(struct gul_dev *gul_dev, int ipc_ch_num,
 	userspace_task = current;
 
 	rcu_read_lock();
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+	efd_file = files_lookup_fd_raw(userspace_task->files, fd);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0)
 	efd_file = files_lookup_fd_rcu(userspace_task->files, fd);
 #else
 	efd_file = fcheck_files(userspace_task->files, fd);
@@ -293,7 +299,7 @@ err:
 	return ret;
 }
 
-void deregister_ipc_channel_irq(struct gul_dev *gul_dev, int ipc_ch_num)
+static void deregister_ipc_channel_irq(struct gul_dev *gul_dev, int ipc_ch_num)
 {
 	struct ipc_chan *ipc_chan;
 

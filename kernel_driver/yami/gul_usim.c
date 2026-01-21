@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0)
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2026 NXP
  */
 #include <linux/moduleparam.h>
 #include <linux/kernel.h>
@@ -76,7 +76,7 @@ static void sim_atr_add(struct usim_dev *usim_dev, uint32_t data)
  * struct usim_dev *usim_dev    pointer to SIM device handler
  */
 
-void wait_for_tc(struct usim_dev *usim_dev)
+static void wait_for_tc(struct usim_dev *usim_dev)
 {
 	struct usim_regs_map *regs = usim_dev->usim_regs;
 
@@ -86,6 +86,7 @@ void wait_for_tc(struct usim_dev *usim_dev)
 	writel(0x38, &regs->usim_xmt_status);
 }
 
+#if 0
 /* Function: wait_for_rc
  *
  * Description: waiting for reception of data complete
@@ -105,6 +106,7 @@ void wait_for_rc(struct usim_dev *usim_dev)
 	/* polling till rfe and rdrf is set */
 	bit_set_polling(&regs->usim_rcv_status, 0x30, 0);
 }
+#endif
 
 
 /* Function: sim_init
@@ -1016,7 +1018,11 @@ static int create_usim_cdev(struct usim_device_data **usim_dev_data)
 	usim_dev_minor = 0;
 
 	/* sysfs class creation */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	usim_dev_class = class_create("usimdev");
+#else
 	usim_dev_class = class_create(THIS_MODULE, "usimdev");
+#endif
 	if (usim_dev_class == NULL) {
 		pr_err("%s:Cannot allocate major number\n", __func__);
 		ret = -1;

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include <linux/kernel.h>
@@ -173,7 +173,7 @@ int gul_stats_init(struct gul_dev *gul_dev)
 		goto fail_cdev;
 	}
 
-	sd->log_buf = vmalloc(GUL_LOG_BUF_SIZE);
+	sd->log_buf = kvmalloc(GUL_LOG_BUF_SIZE, GFP_KERNEL);
 	if (!(sd->log_buf)) {
 		dev_err(gul_dev->dev, "vmalloc failed for %s\n", sd->name);
 		goto fail_mem;
@@ -200,7 +200,7 @@ int gul_stats_exit(struct gul_dev *gul_dev)
 	struct gul_stats_desc *sd = &gul_dev->stats_desc;
 
 	gul_del_stats_list(sd);
-	vfree(sd->log_buf);
+	kvfree(sd->log_buf);
 	cdev_del(&sd->cdev);
 	device_destroy(gul_dev->class, sd->devnr);
 	unregister_chrdev_region(sd->devnr, 1);

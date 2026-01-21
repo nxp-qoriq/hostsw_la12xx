@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include <linux/kernel.h>
@@ -153,7 +153,7 @@ extern dma_addr_t get_qman_pfdr_addr(void);
 extern size_t get_bman_fbpr_size(void);
 dma_addr_t get_bman_fbpr_addr(void);
 
-uint32_t get_hsdcs_support(uint32_t rev)
+static uint32_t get_hsdcs_support(uint32_t rev)
 {
 	switch (rev & GEUL_SVR_HSDCS_MASK) {
 	case GEUL_SVR_HSDCS_NO:
@@ -479,7 +479,7 @@ ssize_t gul_show_global_status(char *buf)
 }
 EXPORT_SYMBOL_GPL(gul_show_global_status);
 
-void gul_dev_reset_interrupt_capability(struct gul_dev *gul_dev)
+static void gul_dev_reset_interrupt_capability(struct gul_dev *gul_dev)
 {
 	if (GUL_CHK_FLG(gul_dev->flags, GUL_FLG_PCI_MSI_EN)) {
 		pci_disable_msi(gul_dev->pdev);
@@ -487,7 +487,7 @@ void gul_dev_reset_interrupt_capability(struct gul_dev *gul_dev)
 	}
 }
 
-void enable_all_msi(struct gul_dev *gul_dev)
+static void enable_all_msi(struct gul_dev *gul_dev)
 {
 	u32 __iomem *pcie_vaddr, *pcie_msi_control;
 	u32 val;
@@ -558,7 +558,7 @@ EXPORT_SYMBOL_GPL(gul_dev_put_msi);
  * Attempt to configure interrupts using the best available
  * capabilities of the hardware and kernel.
  */
-int gul_dev_set_interrupt_capability(struct gul_dev *gul_dev, int mode)
+static int gul_dev_set_interrupt_capability(struct gul_dev *gul_dev, int mode)
 {
 	int ret = 0, i = 0;
 	struct gul_mem_region_info *ccsr_region;
@@ -1175,7 +1175,11 @@ static int __init gul_pcidev_init(void)
 		goto out;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	gul_class = class_create(driver_name);
+#else
 	gul_class = class_create(THIS_MODULE, driver_name);
+#endif
 	if (IS_ERR(gul_class)) {
 		pr_err("%s:%d Error in creating (%s) class\n",
 			__func__, __LINE__, driver_name);

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0)
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2026 NXP
  */
 
 #include <linux/kernel.h>
@@ -20,7 +20,7 @@
 #include <linux/of_gpio.h>
 #include <linux/gpio.h>
 
-void yuc_llcp_reg_read(struct gul_dev *gul_dev, u16 *val, u16 addr)
+static void yuc_llcp_reg_read(struct gul_dev *gul_dev, u16 *val, u16 addr)
 {
 	rfic_priv_t *priv = (rfic_priv_t *)gul_dev->rfic_priv;
 	/* as rfic is byte addressable over llcp so addr need to shift by 1 */
@@ -30,7 +30,7 @@ void yuc_llcp_reg_read(struct gul_dev *gul_dev, u16 *val, u16 addr)
 	return;
 }
 
-void yuc_llcp_reg_write(struct gul_dev *gul_dev, u16 *val, u16 addr)
+static void yuc_llcp_reg_write(struct gul_dev *gul_dev, u16 *val, u16 addr)
 {
 	rfic_priv_t *priv = (rfic_priv_t *)gul_dev->rfic_priv;
 
@@ -40,6 +40,7 @@ void yuc_llcp_reg_write(struct gul_dev *gul_dev, u16 *val, u16 addr)
 	return;
 }
 
+#if 0
 void yuc_rfic_dump_rfic_regs(struct gul_dev *gul_dev,
 			uint32_t addr, uint32_t len)
 {
@@ -64,6 +65,7 @@ void yuc_rfic_write_rfic_reg(struct gul_dev *gul_dev,
 	pr_info("rfic_reg write: Addr 0x%x, val 0x%xd\n", addr, val);
 	yuc_llcp_reg_write(gul_dev, &val_16, addr);
 }
+#endif
 
 #define LOG_CASE(x) \
 	case x:           \
@@ -107,7 +109,7 @@ static void vPrintErrorString(struct gul_dev *gul_dev, YucRtc_t uErrWd)
 	}
 }
 
-int yuc_rfic_cmd_proc(struct gul_dev *gul_dev, u32 cmd_data, u32 rw_addr,
+static int yuc_rfic_cmd_proc(struct gul_dev *gul_dev, u32 cmd_data, u32 rw_addr,
 		      u16 *words, u8 num_words)
 {
 	yuc_cmd_t cmd = {0};
@@ -181,7 +183,7 @@ int yuc_rfic_cmd_proc(struct gul_dev *gul_dev, u32 cmd_data, u32 rw_addr,
 	return 0;
 }
 
-int yuc_prog_rfic_fw(struct gul_dev *gul_dev, char *vaddr, int fw_size)
+static int yuc_prog_rfic_fw(struct gul_dev *gul_dev, char *vaddr, int fw_size)
 {
 	char *vaddr_in = vaddr;
 	char twobyte[4];
@@ -216,7 +218,7 @@ int yuc_prog_rfic_fw(struct gul_dev *gul_dev, char *vaddr, int fw_size)
 	return 0;
 }
 
-int yuc_load_rfic_img(struct gul_dev *gul_dev)
+static int yuc_load_rfic_img(struct gul_dev *gul_dev)
 {
 	int rc = 0;
 	int size = YUC_RFIC_FW_SIZE, fw_size;
@@ -234,19 +236,19 @@ int yuc_load_rfic_img(struct gul_dev *gul_dev)
 	if (rc) {
 		dev_err(gul_dev->dev, "udev Firmware [%s] request failed\n",
 			 YUC_RFIC_PROG_FW_FILE);
-		vfree(vaddr);
+		kvfree(vaddr);
 		goto out;
 	}
 
 	dev_info(gul_dev->dev, "udev Firmware [%s] - Addr %p, size %d\n",
 		YUC_RFIC_PROG_FW_FILE, vaddr, fw_size);
 	rc = yuc_prog_rfic_fw(gul_dev, vaddr, fw_size);
-	vfree(vaddr);
+	kvfree(vaddr);
 out:
 	return rc;
 }
 
-void yuc_prog_rfic_def(struct gul_dev *gul_dev, char *vaddr, int fw_size)
+static void yuc_prog_rfic_def(struct gul_dev *gul_dev, char *vaddr, int fw_size)
 {
 	char *vaddr_in = vaddr;
 	char *line = strsep(&vaddr, "\n");
@@ -280,7 +282,7 @@ void yuc_prog_rfic_def(struct gul_dev *gul_dev, char *vaddr, int fw_size)
 	return;
 }
 
-int yuc_load_rfic_def_reg(struct gul_dev *gul_dev, char *fw_name)
+static int yuc_load_rfic_def_reg(struct gul_dev *gul_dev, char *fw_name)
 {
 	int rc = 0;
 	int size = YUC_RFIC_FW_SIZE, fw_size;
@@ -297,7 +299,7 @@ int yuc_load_rfic_def_reg(struct gul_dev *gul_dev, char *fw_name)
 	if (rc) {
 		dev_err(gul_dev->dev, "udev Firmware [%s] request failed\n",
 			 fw_name);
-		vfree(vaddr);
+		kvfree(vaddr);
 		goto out;
 	}
 
@@ -305,13 +307,13 @@ int yuc_load_rfic_def_reg(struct gul_dev *gul_dev, char *fw_name)
 		fw_name, vaddr, fw_size);
 
 	yuc_prog_rfic_def(gul_dev, vaddr, fw_size);
-	vfree(vaddr);
+	kvfree(vaddr);
 
 out:
 	return rc;
 }
 
-int yuc_rfic_start_fw(struct gul_dev *gul_dev)
+static int yuc_rfic_start_fw(struct gul_dev *gul_dev)
 {
 	u32 cmd_data;
 	u16 rfic_words[YUC_RFIC_WORD_4];
@@ -350,7 +352,7 @@ int yuc_rfic_start_fw(struct gul_dev *gul_dev)
 	return ret;
 }
 
-int yuc_rfic_APP_CalRegulator(struct gul_dev *gul_dev)
+static int yuc_rfic_APP_CalRegulator(struct gul_dev *gul_dev)
 {
 	u32 cmd_data;
 	u16 rfic_words[YUC_RFIC_WORD_2];
@@ -372,7 +374,7 @@ int yuc_rfic_APP_CalRegulator(struct gul_dev *gul_dev)
 	return ret;
 }
 
-int yuc_rfic_APP_CalResistor(struct gul_dev *gul_dev)
+static int yuc_rfic_APP_CalResistor(struct gul_dev *gul_dev)
 {
 	u32 cmd_data;
 	u16 rfic_words[YUC_RFIC_WORD_2];
@@ -395,7 +397,7 @@ int yuc_rfic_APP_CalResistor(struct gul_dev *gul_dev)
 	return ret;
 }
 
-int yuc_do_rfic_resetn(struct gul_dev *gul_dev)
+static int yuc_do_rfic_resetn(struct gul_dev *gul_dev)
 {
 	int ret;
 	uint32_t gpdata;

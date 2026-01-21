@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include "gul_base.h"
@@ -31,18 +31,12 @@
 #ifdef HSDCS_CAL_DEBUG
 #define HSDCS_CAL_TS_LEN 	100 /* event name string len in bytes */
 #define HSDCS_CAL_MAX_EVENTS 	100
-#endif /* HSDCS_CAL_DEBUG */
-
-/* Enables PING to HSDCS-firmware: programming model as per IP docs */
-#define HSDCS_PING_FW 0
-
-#ifdef HSDCS_PING_FW
 
 #define HSDCS_PING_FW_BIT      0x80
 #define HSDCS_PING_ASSERT_DELAY 300 /* ms */
 #define HSDCS_PING_DEASSERT_DELAY 50 /* ms */
+#endif /* HSDCS_CAL_DEBUG */
 
-#endif /*  HSDCS_PING_FW*/
 
 
 /* for FW version < 2.9 */

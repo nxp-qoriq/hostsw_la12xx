@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
-   Copyright 2023 NXP
+   Copyright 2023-2026 NXP
 */
 
 /*
@@ -41,7 +41,7 @@ struct smc_regs {
 static long
 cache_locking_ioctl(struct file *f, unsigned int cmd, unsigned long arg);
 
-void smc_call(struct smc_regs *args)
+static void smc_call(struct smc_regs *args)
 {
     asm volatile(
         "ldr x0, %0\n"
@@ -65,7 +65,7 @@ void smc_call(struct smc_regs *args)
           "x16", "x17");
 }
 
-int is_valid(unsigned long long phyaddr, size_t size) {
+static int is_valid(unsigned long long phyaddr, size_t size) {
     /* need linux kernel export symbol "memblock_is_region_memory" */
     if(memblock_is_region_memory(phyaddr, size) || (phyaddr == 0)) {
         return 1;
@@ -74,7 +74,7 @@ int is_valid(unsigned long long phyaddr, size_t size) {
     }
 }
 
-int enable_l3_cache_locking(unsigned int ways, unsigned long base0, unsigned long base1, unsigned long base2, unsigned long base3) {
+static int enable_l3_cache_locking(unsigned int ways, unsigned long base0, unsigned long base1, unsigned long base2, unsigned long base3) {
 
     struct smc_regs regs;
     size_t size1 = 0, size2 = 0;
@@ -138,7 +138,7 @@ int enable_l3_cache_locking(unsigned int ways, unsigned long base0, unsigned lon
 
 }
 
-int disable_l3_cache_locking(int ways) {
+static int disable_l3_cache_locking(int ways) {
 
     struct smc_regs regs;
 

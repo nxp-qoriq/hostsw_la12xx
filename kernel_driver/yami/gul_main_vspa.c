@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0)
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include <linux/types.h>
@@ -503,7 +503,7 @@ static int32_t get_vspa_section_trans_mode(struct vspa_device *vspadev, int sec_
 	return trans_mode;
 }
 
-int vspa_fw_dma_write(struct gul_dev *gul_dev, struct dma_param *linfo,
+static int vspa_fw_dma_write(struct gul_dev *gul_dev, struct dma_param *linfo,
 		uint32_t flags, int vspa_num)
 {
 	uint32_t size_to_xfer = linfo->size;
@@ -619,7 +619,8 @@ static void fw_dump_sections_info(struct gul_dev *gul_dev, int vspa_num)
 	}
 }
 
-int check_fw_section_info(struct gul_dev *gul_dev, uint8_t *file_start,
+#ifdef VSPA_IMG_CHECK
+static int check_fw_section_info(struct gul_dev *gul_dev, uint8_t *file_start,
 		uint32_t fw_size, struct section_header *sec_header,
 		int sec_num, uint8_t *section_end, uint8_t *section_ptr) {
 	phys_addr_t section_start_phy, section_end_phy, vspa_firmware_start_loc;
@@ -646,6 +647,7 @@ int check_fw_section_info(struct gul_dev *gul_dev, uint8_t *file_start,
 
 	return 0;
 }
+#endif
 
 static int fw_read_and_load_sections_info(struct gul_dev *gul_dev,
 		uint8_t *file_start, uint32_t pg_hd_off,
@@ -989,7 +991,7 @@ OUT:
 
 /************************* Probe / Remove ***********************************/
 
-int __vspa_probe(struct gul_dev *gul_dev, int vspa_num)
+static int __vspa_probe(struct gul_dev *gul_dev, int vspa_num)
 {
 	struct vspa_device **max_vspadev = (struct vspa_device **)
 						gul_dev->vspa_priv;
@@ -1259,7 +1261,7 @@ err_out:
 	return err;
 }
 
-int __vspa_remove(struct vspa_device *vspadev, int vspa_num)
+static int __vspa_remove(struct vspa_device *vspadev, int vspa_num)
 {
 	kfree(vspadev);
 	return 0;

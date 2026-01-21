@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include <linux/delay.h>
@@ -602,7 +602,7 @@ out:
    mtd_get_temp_nowait() returns a temperature beyond the supported range for
    LA12xx. gul_tmp is not updated in this case
 */
-int hsdcs_get_curr_temperature(struct gul_dev *gul_dev,
+static int hsdcs_get_curr_temperature(struct gul_dev *gul_dev,
 				uint32_t modem_id,
 				int32_t *gul_tmp,
 				const char *str)
@@ -748,14 +748,13 @@ void hsdcs_adc_low_pow_conf(struct gul_dev *gul_dev, u8 low_enb_dis, u8 tbgen_rw
 	return;
 }
 
+#if HSDCS_CAL_DEBUG
 /* hsdcs_ping_firmware(): checks if the HS-DCS firmware is alive */
-void  hsdcs_ping_firmware(struct dcs_dev *dcs_dev)
+static void  hsdcs_ping_firmware(struct dcs_dev *dcs_dev)
 {
-#if HSDCS_PING_FW
-
-struct hsdcs_regs_map *regs = dcs_dev->hsdcs_regs;
-struct gul_dev *gul_dev = dcs_dev->gul_dev;
-u32 val;
+	struct hsdcs_regs_map *regs = dcs_dev->hsdcs_regs;
+	struct gul_dev *gul_dev = dcs_dev->gul_dev;
+	u32 val;
 	val = readl(&regs->dcs_mailbox_reg1);
 	val |= HSDCS_PING_FW_BIT;
 	writel(val, &regs->dcs_mailbox_reg1);
@@ -779,9 +778,9 @@ u32 val;
 	else
 		dev_err(gul_dev->dev, "HSDCS PING-assert Ack NOT received (reg0_resp = 0x%x)\n", val);
 
-#endif /* HSDCS_PING_FW */
 	return;
 } /*  hsdcs_ping_firmware(struct dcs_dev *dcs_dev) */
+#endif
 
 /*
    hsdcs_dump_cal_regs(): dumps HS-ADC cal related registers.
@@ -1840,7 +1839,7 @@ static int dcs_pll_init(struct gul_dev *gul_dev)
 	return 0;
 }
 
-void hsdcs_raise_modem_cal_req(struct gul_dev *gul_dev, int caltype)
+static void hsdcs_raise_modem_cal_req(struct gul_dev *gul_dev, int caltype)
 {
 	u32 i, ret, eventid_rcv;
 	struct gul_hif *hif = gul_dev->hif;

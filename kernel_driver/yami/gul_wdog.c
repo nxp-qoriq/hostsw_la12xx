@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -125,7 +125,10 @@ static int wdog_register_irq(struct wdog_dev *wdog_dev,
 		userspace_task = current;
 
 		rcu_read_lock();
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+		efd_file = files_lookup_fd_raw(userspace_task->files,
+					wdog_t->wdog_eventfd);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 		efd_file = files_lookup_fd_rcu(userspace_task->files,
 					wdog_t->wdog_eventfd);
 #else
@@ -489,7 +492,12 @@ static int create_wdog_cdevs(void)
 	wdog_dev_major = MAJOR(wdog_dev_number);
 	/*sysfs class creation
 	 */
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	gul_wdog_dev_class = class_create("gulwdogdev");
+#else
 	gul_wdog_dev_class = class_create(THIS_MODULE, "gulwdogdev");
+#endif
 	if (gul_wdog_dev_class == NULL) {
 		pr_err("%s:Cannot allocate major number\n",
 				__func__);
@@ -518,8 +526,12 @@ static void modem_worker(struct work_struct *work)
 	}
 	if (wdog_priv_t->uspace_registered) {
 		if (wdog_priv_t->evt_fd_ctxt)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,19,0)
 			eventfd_signal(wdog_priv_t->evt_fd_ctxt,
 					SIGNAL_TO_CHANNEL_LISTENER);
+#else
+			eventfd_signal(wdog_priv_t->evt_fd_ctxt);
+#endif
 
 		/* Send signal to Wake up the watchdog wait queue */
 		raw_spin_lock(&wdog_priv_t->wdog_wq_lock);
@@ -717,7 +729,11 @@ int wdog_exit(void)
 		device_destroy(gul_wdog_dev_class,
 			MKDEV(wdog_dev_major, wdog_id));
 		cdev_del(&wdog_dev_data_g[wdog_id]->cdev);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+		cancel_work_sync(&wdog_priv_t->modem_wq);
+#else
 		flush_scheduled_work();
+#endif
 		mdelay(10);
 		kfree(wdog_dev_data_g[wdog_id]->wdog_dev);
 		kfree(wdog_dev_data_g[wdog_id]);

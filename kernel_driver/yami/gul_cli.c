@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2026 NXP
  */
 
 #include <linux/module.h>
@@ -107,6 +107,7 @@ static int print_string(char *buf)
 	return len;
 }
 
+#if 0
 ssize_t cli_device_dump(int id, char *buf)
 {
 	struct cli_priv_data *cli_priv_d;
@@ -121,6 +122,7 @@ ssize_t cli_device_dump(int id, char *buf)
 			cli_priv_d->irq_flag);
 	return 0;
 }
+#endif
 
 static irqreturn_t cli_irq_handler(int irq, void *data)
 {
@@ -133,8 +135,12 @@ static irqreturn_t cli_irq_handler(int irq, void *data)
 		raw_spin_unlock(&cli_priv_d->wq_lock);
 
 		if (cli_priv_d->evt_fd_ctxt)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,19,0)
 			eventfd_signal(cli_priv_d->evt_fd_ctxt,
 					SIGNAL_TO_CHANNEL_LISTENER);
+#else
+			eventfd_signal(cli_priv_d->evt_fd_ctxt);
+#endif
 	}
 
 	return IRQ_HANDLED;
@@ -296,7 +302,10 @@ static long gul_cli_dev_ioctl(struct file *filp, unsigned int cmd,
 			userspace_task = current;
 
 			rcu_read_lock();
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+			efd_file = files_lookup_fd_raw(userspace_task->files,
+					cli_t.event_fd);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0)
 			efd_file = files_lookup_fd_rcu(userspace_task->files,
 					cli_t.event_fd);
 #else
@@ -534,7 +543,11 @@ int cli_init(void)
 	memset(cli_dev, 0, sizeof(struct cli_dev));
 
 	/* sysfs class creation */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	gul_cli_dev_class = class_create("gul_cli_dev");
+#else
 	gul_cli_dev_class = class_create(THIS_MODULE, "gul_cli_dev");
+#endif
 	if (gul_cli_dev_class == NULL) {
 		pr_err("%s:Cannot allocate major number\n", __func__);
 		ret = -1;

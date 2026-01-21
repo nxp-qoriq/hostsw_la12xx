@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <linux/kernel.h>
 #include <linux/pci.h>
@@ -433,7 +433,7 @@ static int gul_load_boot_images(struct gul_dev *gul_dev,
 	if (__be16_to_cpu(hd->fh_machine) != POWERPC_MACH_CODE) {
 		dev_err(gul_dev->dev, "Load_elf: bad hdr fh_machine 0x%02X",
 							__be16_to_cpu(hd->fh_machine));
-		vfree(fw_pci_addr);
+		kvfree(fw_pci_addr);
 		return -ENOEXEC;
 	}
 

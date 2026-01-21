@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <linux/moduleparam.h>
 #include <linux/kernel.h>
@@ -58,7 +58,8 @@ static uint8_t rfic_minor_index;
 static uint8_t in_use_minor[MAX_MODEM];
 
 
-void rf_raise_modem_irq(struct rfdev *rfdev)
+#ifdef RF_FR2_DRVR_ENABLED
+static void rf_raise_modem_irq(struct rfdev *rfdev)
 {
 	raise_modem_msi(rfdev->gul_dev, MSI_TYPE_A, HOST_MSI_RF);
 }
@@ -66,7 +67,7 @@ void rf_raise_modem_irq(struct rfdev *rfdev)
 /*
  * This function will use shared memory to send RFIC SW command
  */
-int rf_send_swcmd(struct rfdev *rfdev, struct rf_sw_cmd_desc *sw_cmd,
+static int rf_send_swcmd(struct rfdev *rfdev, struct rf_sw_cmd_desc *sw_cmd,
 		  int data_size)
 {
 	int ret = 0, retries = RF_SWCMD_TIMEOUT_RETRIES;
@@ -155,7 +156,7 @@ busy_out:
 	return ret;
 }
 
-void rf_swcmd_get_data(struct rfdev *rfdev, struct rf_sw_cmd_desc *sw_cmd,
+static void rf_swcmd_get_data(struct rfdev *rfdev, struct rf_sw_cmd_desc *sw_cmd,
 		       int data_size)
 {
 	struct rf_sw_cmd_desc *remote_cmd;
@@ -174,6 +175,37 @@ void rf_swcmd_get_data(struct rfdev *rfdev, struct rf_sw_cmd_desc *sw_cmd,
 	}
 }
 
+/* Get the sw_cmd from rf metadata on modem. This function helps in sending
+ * swcmd to modem metadata without copy also takes lock for sw_cmd.
+ * Locking - Anybody using swcmd should use rf_get_cmd() which takes lock,
+ * post cmd, and use rf_free_cmd() to free the lock.
+ */
+static struct rf_sw_cmd_desc *rf_get_swcmd(struct rfdev *rfdev)
+{
+	struct rf_sw_cmd_desc *sw_cmd = 0;
+
+	if (down_interruptible(&rfdev->mdata_lock)) {
+		dev_err(rfdev->gul_dev->dev, "Didn't get mdata lock\n");
+		goto out;
+	}
+	sw_cmd = &rfdev->cmd_local;
+	memset(sw_cmd, 0, sizeof(*sw_cmd));
+	sw_cmd->core_id = 4;
+out:
+	return sw_cmd;
+}
+
+static void rf_free_cmd(struct rfdev *rfdev, rf_sw_cmd_desc_t *sw_cmd)
+{
+	rf_sw_cmd_desc_t *remote_cmd;
+
+	remote_cmd = &rfdev->r_hif->rf_mdata.host_swcmd;
+	iowrite32(RF_SW_CMD_STATUS_FREE, &remote_cmd);
+	sw_cmd->status = RF_SW_CMD_STATUS_FREE;
+	up(&rfdev->mdata_lock);
+}
+#endif
+
 static int gul_rfic_open(struct inode *inode, struct file *filp)
 {
 	struct rfdev *dev = container_of(inode->i_cdev,
@@ -189,36 +221,6 @@ static int gul_rfic_release(struct inode *inode, struct file *filp)
 	filp->private_data = NULL;
 
 	return 0;
-}
-
-/* Get the sw_cmd from rf metadata on modem. This function helps in sending
- * swcmd to modem metadata without copy also takes lock for sw_cmd.
- * Locking - Anybody using swcmd should use rf_get_cmd() which takes lock,
- * post cmd, and use rf_free_cmd() to free the lock.
- */
-struct rf_sw_cmd_desc *rf_get_swcmd(struct rfdev *rfdev)
-{
-	struct rf_sw_cmd_desc *sw_cmd = 0;
-
-	if (down_interruptible(&rfdev->mdata_lock)) {
-		dev_err(rfdev->gul_dev->dev, "Didn't get mdata lock\n");
-		goto out;
-	}
-	sw_cmd = &rfdev->cmd_local;
-	memset(sw_cmd, 0, sizeof(*sw_cmd));
-	sw_cmd->core_id = 4;
-out:
-	return sw_cmd;
-}
-
-void rf_free_cmd(struct rfdev *rfdev, rf_sw_cmd_desc_t *sw_cmd)
-{
-	rf_sw_cmd_desc_t *remote_cmd;
-
-	remote_cmd = &rfdev->r_hif->rf_mdata.host_swcmd;
-	iowrite32(RF_SW_CMD_STATUS_FREE, &remote_cmd);
-	sw_cmd->status = RF_SW_CMD_STATUS_FREE;
-	up(&rfdev->mdata_lock);
 }
 
 void __rf_dump_hif(struct rfdev *rfdev)
@@ -1243,7 +1245,7 @@ static int gul_rfic_create_cdev(struct rfdev *rfdev)
 	return ret;
 }
 
-int gul_rfic_init_mdata(struct rfdev *rfdev)
+static int gul_rfic_init_mdata(struct rfdev *rfdev)
 {
 	struct gul_dev *gul_dev = rfdev->gul_dev;
 	struct gul_hif *hif;

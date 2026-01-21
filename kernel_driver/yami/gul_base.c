@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0)
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include <linux/kernel.h>
@@ -836,8 +836,11 @@ int init_tti_dev(void)
 	/* Device Major number*/
 	tti_dev_major = MAJOR(tti_dev_number);
 	/*sysfs class creation */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	gul_tti_dev_class = class_create("gulttidev");
+#else
 	gul_tti_dev_class = class_create(THIS_MODULE, "gulttidev");
-
+#endif
 	tti_dev_data = kmalloc(MAX_MODEM * sizeof(*tti_dev_data), GFP_KERNEL);
 	if (tti_dev_data == NULL) {
 		pr_err("TTI device data array alloc failed\n");
@@ -872,7 +875,7 @@ void remove_tti_dev(void)
 	kfree(tti_dev_data);
 }
 
-void tti_dev_stop(struct gul_dev *dev)
+static void tti_dev_stop(struct gul_dev *dev)
 {
 	struct tti_priv *priv;
 	int i, j;
@@ -895,7 +898,7 @@ void tti_dev_stop(struct gul_dev *dev)
 	}
 }
 
-int tti_dev_start(struct gul_dev *dev)
+static int tti_dev_start(struct gul_dev *dev)
 {
 	struct device_node *dn_modem_tti;
 	struct tti_dev *tti_dev = NULL;
@@ -985,7 +988,7 @@ int get_fuse_val(struct gul_dev *gul_dev)
 	return fuse_personality;
 }
 
-int gul_subdrv_check_fail(struct gul_sub_driver *subdrv)
+static int gul_subdrv_check_fail(struct gul_sub_driver *subdrv)
 {
 	if (vspa_disable && subdrv->type == GUL_SUBDRV_TYPE_VSPA)
 		return -1;
@@ -1001,7 +1004,8 @@ int gul_subdrv_check_fail(struct gul_sub_driver *subdrv)
 
 	return 0;
 }
-char gul_hsdcs_check(enum soc_fuse soc_fuse)
+
+static char gul_hsdcs_check(enum soc_fuse soc_fuse)
 {
 	switch (soc_fuse) {
 	case FUSE_LA1215:
@@ -1018,7 +1022,7 @@ char gul_hsdcs_check(enum soc_fuse soc_fuse)
 	}
 }
 
-char gul_lsdcs_check(enum soc_fuse soc_fuse)
+static char gul_lsdcs_check(enum soc_fuse soc_fuse)
 {
 	switch (soc_fuse) {
 	case FUSE_LA1212:
@@ -1036,7 +1040,8 @@ char gul_lsdcs_check(enum soc_fuse soc_fuse)
 		return -1;
 	}
 }
-int gul_warmup_subdrv_probe_check_fail(struct gul_dev *gul_dev,
+
+static int gul_warmup_subdrv_probe_check_fail(struct gul_dev *gul_dev,
 		struct gul_sub_driver *subdrv, int modem_id)
 {
 	struct gul_hif *hif = gul_dev->hif;
@@ -1404,7 +1409,7 @@ int gul_base_probe(struct gul_dev *gul_dev)
 			dev_err(gul_dev->dev, "MODEM SHARE AREA: Memory Alocation Failed\n");
 			goto out;
 		}
-		iq_sample_region->type = GUL_SCRATCH_MODEM_SHARE;
+		iq_sample_region->type = (enum gul_mem_region_t)GUL_SCRATCH_MODEM_SHARE;
 		g_gul_global[gul_dev->id].share_buf_phys_addr =
 			iq_sample_region->phys_addr;
 

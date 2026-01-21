@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: (BSD-3-Clause OR GPL-2.0)
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2026 NXP
  */
 #ifndef __GUL_BASE_H__
 #define __GUL_BASE_H__
@@ -663,4 +663,24 @@ void gul_modinfo_get(struct gul_dev *gul_dev, modinfo_t *mi);
 #if defined (LA1224) || defined(LA1238RDB)
 char gul_get_host_board_rev(void);
 #endif
+
+ssize_t gul_ep_show_stats(void *stats_args, char *buf, void *dev);
+void gul_ep_reset_stats(void *stats_args);
+int gul_register_ep_stats_ops(struct gul_dev *gul_dev);
+int gul_ipc_probe(struct gul_dev *gul_dev,
+		int virq_count,	struct virq_evt_map *virq_map);
+int gul_ipc_remove(struct gul_dev *gul_dev);
+int gul_ipc_init(void);
+int gul_ipc_exit(void);
+int wdog_probe(struct gul_dev *gul_dev, int virq_count, struct virq_evt_map *virq_map);
+int wdog_init(void);
+int wdog_exit(void);
+int tvd_init(void);
+int tvd_exit(void);
+int tvd_probe(struct gul_dev *gul_dev, int virq_count, struct virq_evt_map *virq_map);
+int tvd_remove(struct gul_dev *gul_dev);
+int cli_init(void);
+int cli_exit(void);
+int cli_probe(struct gul_dev *gul_dev, int virq_count, struct virq_evt_map *virq_map);
+int cli_remove(struct gul_dev *gul_dev);
 #endif

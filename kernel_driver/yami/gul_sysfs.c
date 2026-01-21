@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include <linux/kernel.h>
@@ -261,7 +261,7 @@ static ssize_t gul_show_ep_log_core_5(struct device *dev,
 	return show_ep_log(dev, attr, buf, 5);
 }
 
-ssize_t reset_ep_log(struct device *dev,
+static ssize_t reset_ep_log(struct device *dev,
 		struct device_attribute *attr, const char *buf,
 		size_t count, uint8_t core_id)
 {

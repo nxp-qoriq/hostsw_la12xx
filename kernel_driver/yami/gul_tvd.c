@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2026 NXP
  */
 
 #include <linux/module.h>
@@ -56,6 +56,9 @@ static uint32_t tvd_dev_minor;
 static struct class *gul_tvd_dev_class;
 static struct gul_tvd_device_data *tvd_dev_data_g[MAX_MODEM];
 struct tvd_dev *g_tvd_dev;
+
+int mtd_get_temp_nowait(struct tvd_dev *tvd_dev, uint32_t tvdid,
+		enum mtd_temp_sites site, int32_t *mtd_temp, bool single_site);
 
 #define swap_data(data) \
 	((((data) >> 16) & 0x0000FFFF) | (((data) << 16) & 0xFFFF0000))
@@ -116,8 +119,12 @@ static irqreturn_t tvd_irq_handler(int irq, void *data)
 		raw_spin_unlock(&tvd_priv_d->tvd_wq_lock);
 
 		if (tvd_priv_d->evt_fd_ctxt)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,19,0)
 			eventfd_signal(tvd_priv_d->evt_fd_ctxt,
 					SIGNAL_TO_CHANNEL_LISTENER);
+#else
+			eventfd_signal(tvd_priv_d->evt_fd_ctxt);
+#endif
 	}
 
 	return IRQ_HANDLED;
@@ -260,7 +267,7 @@ static irqreturn_t tvd_temp_irq_handler(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-int mtd_get_site_temp(union mtdcurentTemp mtd_site_temp,
+static int mtd_get_site_temp(union mtdcurentTemp mtd_site_temp,
 		enum mtd_temp_sites site, bool is_remote_temp)
 {
 	int ret = 0;
@@ -294,7 +301,7 @@ int mtd_get_site_temp(union mtdcurentTemp mtd_site_temp,
 }
 
 
-int mtd_get_temp(struct tvd_dev *tvd_dev, uint32_t tvdid,
+static int mtd_get_temp(struct tvd_dev *tvd_dev, uint32_t tvdid,
 		enum mtd_temp_sites site, int32_t *pmtd_temp)
 {
 	int ret = 0;
@@ -737,7 +744,7 @@ static int ctd_update_threshold(struct tvd_dev *tvd_dev,
 	return ret;
 }
 
-void ctd_cbk(struct ctd_thermal_event *ctd_event)
+static void ctd_cbk(struct ctd_thermal_event *ctd_event)
 {
 	struct tvd_priv_data *tvd_priv_d = NULL;
 	int tvd_id = 0;
@@ -760,8 +767,12 @@ void ctd_cbk(struct ctd_thermal_event *ctd_event)
 			tvd_priv_d->ctd_cur_temp = ctd_event->temp;
 
 			if (tvd_priv_d->evt_fd_ctxt)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,19,0)
 				eventfd_signal(tvd_priv_d->evt_fd_ctxt,
 						SIGNAL_TO_CHANNEL_LISTENER);
+#else
+				eventfd_signal(tvd_priv_d->evt_fd_ctxt);
+#endif
 
 			/* Wake up for CTD event */
 			raw_spin_lock(&tvd_priv_d->tvd_wq_lock);
@@ -1135,7 +1146,10 @@ static long gul_tvd_dev_ioctl(struct file *filp, unsigned int cmd,
 			userspace_task = current;
 
 			rcu_read_lock();
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+			efd_file = files_lookup_fd_raw(userspace_task->files,
+                                        tvd_t.tvd_eventfd);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 			efd_file = files_lookup_fd_rcu(userspace_task->files,
 					tvd_t.tvd_eventfd);
 #else
@@ -1499,7 +1513,11 @@ int tvd_init(void)
 	memset(tvd_dev, 0, sizeof(struct tvd_dev));
 
 	/* sysfs class creation */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	gul_tvd_dev_class = class_create("gultvddev");
+#else
 	gul_tvd_dev_class = class_create(THIS_MODULE, "gultvddev");
+#endif
 	if (gul_tvd_dev_class == NULL) {
 		pr_err("%s:Cannot allocate major number\n", __func__);
 		ret = -1;

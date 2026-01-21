@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2026 NXP
  */
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -43,8 +43,12 @@ static irqreturn_t tti_irq_handler(int irq, void *data)
 		swake_up_all_locked(&tti_priv_t->tti_wq);
 		raw_spin_unlock(&tti_priv_t->wq_lock);
 		if (tti_priv_t->evt_fd_ctxt) {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,19,0)
 			eventfd_signal(tti_priv_t->evt_fd_ctxt,
-				SIGNAL_TO_USERSPACE);
+					SIGNAL_TO_USERSPACE);
+#else
+			eventfd_signal(tti_priv_t->evt_fd_ctxt);
+#endif
 		}
 	}
 	return IRQ_HANDLED;
@@ -87,7 +91,10 @@ int tti_register_irq(struct tti_dev *tti_dev, struct tti *tti_t)
 	if (tti_t->tti_eventfd > 0) {
 		userspace_task = current;
 		rcu_read_lock();
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+		efd_file = files_lookup_fd_raw(userspace_task->files,
+                                tti_t->tti_eventfd);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 		efd_file = files_lookup_fd_rcu(userspace_task->files,
 				tti_t->tti_eventfd);
 #else
