@@ -1,5 +1,5 @@
 #SPDX-License-Identifier: GPL-2.0
-#Copyright 2019-2024 NXP
+#Copyright 2019-2026 NXP
 
 CC              = $(CROSS_COMPILE)gcc
 AR              = $(CROSS_COMPILE)ar
@@ -35,7 +35,7 @@ COMMON_INCLUDES += -I${COMMON_DIR} -I${UAPI_DIR}
 CFLAGS += ${COMMON_INCLUDES}
 HOST_CFLAGS += ${COMMON_INCLUDES}
 
-GIT_VERSION :=\"$(shell git describe --abbrev=0 --tags)\"
+GIT_VERSION := "$(shell git describe --abbrev=0 --tags --always 2>/dev/null || echo no-git)"
 
 # Config Tweak handles
 DEBUG ?= 1
@@ -85,22 +85,22 @@ CFLAGS += -DDEBUG
 endif
 
 ifeq ($(LA1224),1)
-export BSP_VERSION := $(shell git describe --tags --abbrev=11 --dirty --match "la12*")
+export BSP_VERSION := $(shell git describe --tags --abbrev=11 --dirty --match "la12*" --always 2>/dev/null || echo "snapshot")
 CFLAGS += -DLA1224
 endif
 
 ifeq ($(LA1224CPE),1)
-export BSP_VERSION := $(shell git describe --tags --abbrev=8 --dirty --match "CPEFR1_BSP*")
+export BSP_VERSION := $(shell git describe --tags --abbrev=8 --dirty --match "CPEFR1_BSP*" --always 2>/dev/null || echo "snapshot")
 CFLAGS += -DLA1224CPE
 endif
 
 ifeq ($(LA1238RDB),1)
-export BSP_VERSION := $(shell git describe --tags --abbrev=8 --dirty --match "5GISCBSP*")
+export BSP_VERSION := $(shell git describe --tags --abbrev=8 --dirty --match "5GISCBSP*" --always 2>/dev/null || echo "snapshot")
 CFLAGS += -DLA1238RDB
 endif
 
 ifeq ($(LA1238CPE),1)
-export BSP_VERSION := $(shell git describe --tags --abbrev=8 --dirty --match "CPEFR1_BSP*")
+export BSP_VERSION := $(shell git describe --tags --abbrev=8 --dirty --match "CPEFR1_BSP*" --always 2>/dev/null || echo "snapshot")
 CFLAGS += -DLA1238CPE
 endif
 ifneq ($(BSP_VERSION),)
