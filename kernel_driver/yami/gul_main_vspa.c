@@ -560,8 +560,8 @@ static int vspa_fw_dma_write(struct gul_dev *gul_dev, struct dma_param *linfo,
 			return -ENOMEM;
 		}
 
-		memcpy(vspa_dma_region->vaddr, (const void *)dma_req.axi_addr,
-							dma_req.byte_cnt);
+		memmove(vspa_dma_region->vaddr, (const void *)dma_req.axi_addr,
+				dma_req.byte_cnt);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0)
 		dma_map_page_attrs(&vspadev->pdev->dev,
