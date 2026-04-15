@@ -1137,7 +1137,7 @@ int main(int argc, char *argv[])
 
 		if (strcmp(buffer, "append_fplmn") == 0) {
 			printf("plmn id:");
-			if (scanf("%6s", plmn_id_char) == 0)
+			if (scanf("%5s", plmn_id_char) == 0)
 				continue;
 			if (strlen(plmn_id_char) != 6) {
 				printf("Incorrect plmn, plmn id size should be 3bytes\n");
