@@ -556,6 +556,9 @@ static long gul_ipc_ioctl(struct file *filp, unsigned int cmd,
 		if (ret != 0)
 			return -EFAULT;
 
+		if (mem_desc.size < 0)
+			return -EINVAL;
+
 		if (gul_ipc_pci_map_is_overlap(ipc_dev,
 			mem_desc.host_phys, mem_desc.size) < 0)
 			return -EINVAL;
@@ -610,6 +613,9 @@ static long gul_ipc_ioctl(struct file *filp, unsigned int cmd,
 		ret = copy_from_user(&ipc_channel, (ipc_eventfd_t *)arg,
 				sizeof(ipc_eventfd_t));
 		if (ret != 0)
+			return -EFAULT;
+
+		if (ipc_channel.ipc_channel_num < 0)
 			return -EFAULT;
 
 		ret = register_ipc_channel_irq(gul_dev,
