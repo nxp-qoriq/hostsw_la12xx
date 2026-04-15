@@ -1282,7 +1282,7 @@ int main(int argc, char *argv[])
 			}
 
 			printf("uplink count:");
-			if (scanf("%128s", data) == 0)
+			if (scanf("%127s", data) == 0)
 				continue;
 			if (strlen(data) != 8) {
 				printf("Incorrect ul nas value, size should be 4bytes\n");
