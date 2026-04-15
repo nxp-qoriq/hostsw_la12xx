@@ -1004,7 +1004,7 @@ int main(int argc, char *argv[])
 		memset(buf, '\0', sizeof(buf));
 		memset(buffer, '\0', sizeof(buffer));
 
-		if (scanf(" %256[^\n]", buf) == 0)
+		if (scanf(" %255[^\n]", buf) == 0)
 			continue;
 
 		if (strcmp(buf, "exit") == 0) {
