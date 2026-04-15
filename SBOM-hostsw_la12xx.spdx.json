@@ -1,0 +1,35 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-04-15T07:17:13Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.26"
+  },
+  "name": "geul_bsp_host_sw-la12xx-sdk4.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/1c281958-4bf6-4c0c-8e2e-558d5d72c964",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-1c281958-4bf6-4c0c-8e2e-558d5d72c964",
+      "name": "geul_bsp_host_sw",
+      "versionInfo": "la12xx-sdk4.0",
+      "licenseConcluded": "(GPL-2.0-or-later)",
+      "licenseDeclared": "(GPL-2.0-or-later)",
+      "downloadLocation": "https://github.com/nxp-qoriq/hostsw_la12xx.git",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-1c281958-4bf6-4c0c-8e2e-558d5d72c964"
+    }
+  ]
+}
